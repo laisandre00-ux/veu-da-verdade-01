@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Véu da Verdade — Protótipo 0.7 — mundo expandido</title>
+<style>
+:root{--cyan:#8be9fd;--violet:#b7a3ff;--panel:rgba(10,17,39,.82)}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#080e20;color:#f4f6ff;font:15px system-ui,Segoe UI,sans-serif}#game{position:fixed;inset:0}canvas{display:block}#hud{position:fixed;inset:0;pointer-events:none}.panel{background:var(--panel);border:1px solid #8be9fd55;border-radius:14px;box-shadow:0 8px 35px #0005;backdrop-filter:blur(8px);padding:14px}.brand{position:absolute;left:18px;top:16px;max-width:310px}.brand h1{font-family:Georgia,serif;font-weight:500;letter-spacing:1px;font-size:25px;margin:0 0 4px}.brand small{color:#b6c8e9}.mission{position:absolute;right:18px;top:16px;width:280px}.mission h3{margin:0 0 8px;color:var(--cyan)}.mission p{margin:5px 0;color:#dce5ff;line-height:1.4}.progress{height:5px;background:#ffffff20;border-radius:8px;margin-top:10px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .3s}.bottom{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 28px));text-align:center}.bottom strong{color:var(--cyan)}#message{min-height:24px;margin-bottom:7px}.controls{font-size:12px;color:#bdc9e4}.key{display:inline-block;border:1px solid #ffffff45;border-radius:5px;padding:2px 6px;margin:0 2px;color:white}.interact{color:#fff;background:#5c55a9;border-radius:7px;padding:3px 7px}.side{position:absolute;left:18px;bottom:18px;width:210px}.side h3{font-size:13px;margin:0 0 6px;color:var(--violet)}#clues{font-size:12px;color:#d8e1fa;line-height:1.6}.crosshair{position:absolute;left:50%;top:50%;width:16px;height:16px;transform:translate(-50%,-50%);opacity:.6}.stats{position:absolute;right:18px;top:178px;width:220px}.statlabel{display:flex;justify-content:space-between;font-size:11px;margin:5px 0}.meter{height:7px;border-radius:9px;background:#ffffff20;overflow:hidden}.meter span{display:block;height:100%;width:100%;transition:width .15s}.hp span{background:linear-gradient(90deg,#ff5677,#ff9d9d)}.stamina span{background:linear-gradient(90deg,#64e6bd,#9bf4e0)}.combatTip{font-size:11px;color:#d7e1ff;margin-top:8px}.toast{position:absolute;left:50%;top:70%;transform:translateX(-50%);padding:10px 16px;background:#0a1127dd;border:1px solid #8be9fd66;border-radius:10px;display:none;max-width:min(420px,90vw);text-align:center}.mobile{position:absolute;bottom:22px;right:14px;display:none;pointer-events:auto;gap:8px;align-items:flex-end;touch-action:none}.joystick{position:absolute;left:18px;bottom:24px;width:124px;height:124px;border-radius:50%;background:#111b38b8;border:2px solid #ffffff55;pointer-events:auto;touch-action:none;display:none}.stick{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:#8be9fdcc;border:2px solid #fff;box-shadow:0 0 18px #8be9fd66;pointer-events:none}.mobile button{touch-action:none;user-select:none;-webkit-user-select:none}.mobile button{border:1px solid #ffffff55;background:#172449cc;color:white;border-radius:50%;width:54px;height:54px;font-weight:bold}.mobile .wide{border-radius:14px;width:70px}@media(max-width:700px){.stats{right:10px;top:120px;width:145px;padding:9px}.mobile{display:flex;flex-direction:column}.joystick{display:block}.mission{bottom:auto;top:112px;left:10px;right:auto;width:160px}.brand h1{font-size:18px}.brand p{font-size:10px}.bottom{left:10px;right:10px;bottom:8px;padding:9px;font-size:12px}.controls{display:none}.startbox h2{font-size:30px}}.crosshair:before,.crosshair:after{content:'';position:absolute;background:#fff}.crosshair:before{left:7px;top:0;width:2px;height:16px}.crosshair:after{top:7px;left:0;height:2px;width:16px}.start{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(#070d20a8,#070d20d9);pointer-events:auto}.startbox{max-width:520px;margin:20px;text-align:center}.startbox h2{font:38px Georgia,serif;margin:0 0 8px}.startbox p{line-height:1.6;color:#d5def5}.start button{pointer-events:auto;border:0;border-radius:10px;background:linear-gradient(110deg,#70d9ed,#a995ff);padding:13px 24px;font-size:16px;font-weight:750;color:#10162d;cursor:pointer}.hidden{display:none}@media(max-width:700px){.mission{top:auto;bottom:100px;right:12px;width:190px;padding:10px}.brand{left:12px;top:12px}.brand h1{font-size:20px}.side{display:none}.bottom{bottom:12px}.controls{font-size:10px}}
+
+#locationTag{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:12;padding:8px 14px;border:1px solid #7fe7e0aa;border-radius:999px;background:#081521d9;color:#baf9f0;font-size:11px;letter-spacing:2px;font-weight:800;white-space:nowrap;pointer-events:none}
+#dialogPanel{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(420px,calc(100vw - 34px));z-index:18;display:none;background:linear-gradient(135deg,#101a2af2,#1d1631f2);border:1px solid #9b8affaa;border-radius:15px;padding:14px 17px;box-shadow:0 12px 36px #0009;pointer-events:none}
+#dialogPanel strong{display:block;color:#c8c0ff;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}#dialogPanel p{margin:0;color:#f0f2ff;font-size:13px;line-height:1.55}
+@media(max-width:600px){#locationTag{font-size:9px;letter-spacing:1.3px;padding:7px 10px}#dialogPanel{bottom:calc(142px + env(safe-area-inset-bottom))}}
+
+/* Ajustes dedicados para telas touch */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;touch-action:none}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#mobileControls{display:none;position:fixed;inset:0;z-index:30;pointer-events:none;user-select:none;-webkit-user-select:none}
+#mobileStickArea{position:absolute;left:max(14px,env(safe-area-inset-left));bottom:calc(18px + env(safe-area-inset-bottom));width:142px;height:142px;border-radius:50%;background:#09152288;border:1px solid #b4d6ff66;box-shadow:0 0 22px #111a;pointer-events:auto;touch-action:none}
+#mobileStickBase{position:absolute;inset:19px;border-radius:50%;border:1px solid #a8c9ff55;background:radial-gradient(circle,#7d91bd22,#101a2c66)}
+#mobileStickKnob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:linear-gradient(145deg,#b6caffdd,#7f8dd8dd);border:1px solid #fff9;box-shadow:0 3px 14px #0008;transform:translate(0,0)}
+#mobileActions{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(2,66px);gap:10px;pointer-events:auto}
+.mobileAction{height:60px;border-radius:19px;border:1px solid #d9e5ff88;background:linear-gradient(145deg,#222c49eF,#10182beF);color:#f7f7ff;font-size:11px;font-weight:800;letter-spacing:.4px;box-shadow:0 5px 16px #0008;touch-action:manipulation;pointer-events:auto}
+.mobileAction:active{transform:scale(.95);background:#6554a9}
+#mobileHint{position:absolute;left:50%;bottom:calc(170px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:7px 10px;border-radius:9px;background:#091522bb;color:#dce8ff;font-size:10px;white-space:nowrap;pointer-events:none}
+@media(pointer:coarse),(max-width:800px){
+ #mobileControls{display:block}
+ #mobileStickArea{width:128px;height:128px}
+ #mobileActions{grid-template-columns:repeat(2,60px);gap:8px}
+ .mobileAction{height:56px;font-size:10px;border-radius:17px}
+ #mobileHint{bottom:calc(154px + env(safe-area-inset-bottom))}
+ /* Keep HUD legible and inside notches */
+ #locationTag{top:calc(8px + env(safe-area-inset-top));max-width:78vw;overflow:hidden;text-overflow:ellipsis}
+}
+@media(max-width:390px){
+ #mobileStickArea{width:112px;height:112px;bottom:calc(12px + env(safe-area-inset-bottom))}
+ #mobileStickBase{inset:15px}
+ #mobileStickKnob{width:42px;height:42px;margin:-21px 0 0 -21px}
+ #mobileActions{right:10px;bottom:calc(14px + env(safe-area-inset-bottom));grid-template-columns:repeat(2,54px);gap:7px}
+ .mobileAction{height:50px;font-size:9px}
+ #mobileHint{display:none}
+}
+
+
+/* Controles móveis: paisagem e tela cheia */
+#vtScreenControls{
+ position:fixed;top:10px;right:10px;z-index:99999;display:flex;gap:8px;
+ font-family:system-ui,sans-serif;pointer-events:auto
+}
+#vtScreenControls button{
+ border:1px solid rgba(255,255,255,.32);border-radius:12px;
+ padding:10px 12px;background:rgba(15,22,35,.88);color:#fff;
+ font-size:13px;font-weight:700;box-shadow:0 3px 14px #0005
+}
+#vtLandscapeHint{
+ display:none;position:fixed;inset:0;z-index:99998;background:#101827;color:#fff;
+ align-items:center;justify-content:center;text-align:center;padding:28px;
+ font:600 18px/1.5 system-ui,sans-serif
+}
+@media (orientation:portrait) and (max-width:900px){
+ #vtLandscapeHint{display:flex}
+}
+@media (orientation:landscape) and (max-width:1000px){
+ #vtLandscapeHint{display:none}
+}
+@media (max-width:900px){
+ #vtScreenControls button{padding:8px 10px;font-size:12px}
+}
+
+</style>
+<style>
+#mobileStickArea,#mobileStickBase,#mobileStickKnob,#mobileActions,.mobileAction{touch-action:none}
+#vtLandscapeHint{pointer-events:auto}
+</style>
+
+</head><body><div id="game"></div><div id="hud"><div class="brand panel"><h1>Véu da Verdade</h1><small>CASO 001 · O SINO À MEIA-NOITE</small></div><div class="mission panel"><h3>✦ Investigação atual</h3><p id="levelLabel">Nível 1 · Caso 001</p><p id="missionText">Encontre as pistas escondidas na praça.</p><div class="progress"><span id="bar"></span></div><p style="font-size:12px" id="count">Pistas encontradas: 0/3</p><div id="cityQuest" style="font-size:11px;line-height:1.45;margin-top:7px;color:#d9e6ff">Tarefas da cidade: visite a farmácia, a hospedaria e a biblioteca secreta.</div></div><div class="stats panel"><div class="statlabel"><span>♥ Vitalidade</span><b id="hpText">100/100</b></div><div class="meter hp"><span id="hpBar"></span></div><div class="statlabel"><span>⚡ Energia</span><b id="stText">100/100</b></div><div class="meter stamina"><span id="stBar"></span></div><div class="combatTip">F: ataque · Espaço: esquiva</div></div><div class="side panel"><h3>📁 CADERNO DE PISTAS</h3><div id="clues">Ainda não há pistas registradas.</div><div id="crystalCounter" style="margin-top:8px;color:#d7bdff">💎 Cristais: 0</div></div><div class="crosshair"></div><div class="toast" id="toast"></div><div id="joystick" class="joystick"><div id="stick" class="stick"></div></div><div class="mobile"><button id="mobileRun" class="wide">CORRER</button><button id="mobileDodge">ESQUIVA</button><button id="mobileInteract">INVESTIGAR</button><button id="mobileAttack">ATACAR</button></div><div class="bottom panel"><div id="message">Explore a praça misteriosa.</div><div class="controls"><span class="key">W A S D</span> mover · <span class="key">Mouse</span> olhar · <span class="key">Shift</span> correr · <span class="key">E</span> investigar/falar · <span class="key">F</span> atacar · <span class="key">Espaço</span> esquivar</div></div></div>
+<div class="start" id="intro"><div class="startbox"><h2>Véu da Verdade</h2><p>Uma cidade coberta pela chuva. Um sino tocou numa torre abandonada — mas ninguém admite tê-lo ouvido. Explore a praça, encontre três pistas e descubra o primeiro segredo.</p><p id="introControls"><b>PC:</b> WASD mover · mouse olhar · E investigar · F atacar · Espaço esquivar · Shift correr.<br><b>Celular:</b> use o joystick à esquerda e os botões à direita; arraste o dedo no cenário para girar a câmera.</p><button id="begin">Entrar na investigação</button></div></div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+const mount=document.querySelector('#game');
+const scene=new THREE.Scene();
+// Céu vivo: gradiente atmosférico, estrelas, lua, nuvens e ciclo suave de luz.
+const skyDome=new THREE.Mesh(
+ new THREE.SphereGeometry(420,32,20),
+ new THREE.ShaderMaterial({
+  side:THREE.BackSide,
+  uniforms:{uTime:{value:0},uDay:{value:0.12}},
+  vertexShader:'varying vec3 vWorld; void main(){vec4 w=modelMatrix*vec4(position,1.0);vWorld=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
+  fragmentShader:`varying vec3 vWorld;uniform float uTime;uniform float uDay;
+   void main(){
+    float h=normalize(vWorld).y;
+    vec3 night=vec3(0.025,0.035,0.12);
+    vec3 horizon=vec3(0.28,0.18,0.34);
+    vec3 zenith=vec3(0.035,0.07,0.22);
+    float dusk= smoothstep(-0.35,0.65,h);
+    vec3 col=mix(horizon,zenith,dusk);
+    col=mix(night,col,0.92);
+    float glow=exp(-pow((h+0.08)*5.0,2.0));
+    col+=vec3(0.22,0.09,0.18)*glow;
+    float shimmer=0.012*sin(uTime*0.35+h*12.0);
+    col+=shimmer;
+    gl_FragColor=vec4(col,1.0);
+   }`
+ })
+);
+skyDome.frustumCulled=false;scene.add(skyDome);
+
+const skyStars=new THREE.Group();
+const starMaterial=new THREE.MeshBasicMaterial({color:0xe5efff,transparent:true,opacity:.9});
+for(let i=0;i<260;i++){
+ const star=new THREE.Mesh(new THREE.SphereGeometry(.18+Math.random()*.22,5,4),starMaterial);
+ const a=Math.random()*Math.PI*2, y=.08+Math.random()*.88, r=310;
+ star.position.set(Math.cos(a)*r*Math.sqrt(1-y*y),r*y,Math.sin(a)*r*Math.sqrt(1-y*y));
+ star.userData.twinkle=Math.random()*Math.PI*2;
+ skyStars.add(star);
+}
+scene.add(skyStars);
+
+const moonGroup=new THREE.Group();
+const moonSphere=new THREE.Mesh(new THREE.SphereGeometry(7,24,16),new THREE.MeshStandardMaterial({color:0xe4e8ff,emissive:0xa8b9ff,emissiveIntensity:.7,roughness:1}));
+moonGroup.add(moonSphere);
+const moonHalo=new THREE.Mesh(new THREE.SphereGeometry(10,24,16),new THREE.MeshBasicMaterial({color:0x829eff,transparent:true,opacity:.08,side:THREE.BackSide}));
+moonGroup.add(moonHalo);moonGroup.position.set(-100,155,-240);scene.add(moonGroup);
+const moonLight=new THREE.DirectionalLight(0x9bb8ff,.55);moonLight.position.copy(moonGroup.position);scene.add(moonLight);
+
+const cloudGroup=new THREE.Group();
+const cloudMat=new THREE.MeshStandardMaterial({color:0x8d94c5,transparent:true,opacity:.22,roughness:1,flatShading:true});
+for(let i=0;i<16;i++){
+ const cloud=new THREE.Group();
+ const x=(Math.random()-.5)*520,z=(Math.random()-.5)*520,y=95+Math.random()*70;
+ for(let j=0;j<5;j++){
+  const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(5+Math.random()*5,1),cloudMat);
+  puff.position.set((j-2)*6,(Math.random()-.5)*3,(Math.random()-.5)*7);
+  puff.scale.set(1.5,.55,1);cloud.add(puff);
+ }
+ cloud.position.set(x,y,z);cloud.userData.speed=.8+Math.random()*1.5;cloudGroup.add(cloud);
+}
+scene.add(cloudGroup);
+
+// Silhueta distante de telhados para que o horizonte pareça uma cidade, não um vazio.
+const skyline=new THREE.Group();
+const skylineMat=new THREE.MeshStandardMaterial({color:0x25263e,roughness:1});
+for(let i=0;i<45;i++){
+ const w=4+Math.random()*10,h=5+Math.random()*18,d=4+Math.random()*8;
+ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),skylineMat);
+ const a=i/45*Math.PI*2,r=120+Math.random()*20;
+ b.position.set(Math.cos(a)*r,h/2-1,Math.sin(a)*r);skyline.add(b);
+ if(i%4===0){
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(w*.72,4,4),skylineMat);
+  roof.position.set(b.position.x,h+1,b.position.z);roof.rotation.y=Math.PI/4;skyline.add(roof);
+ }
+}
+scene.add(skyline);
+
+scene.background=new THREE.Color(0x101a35);scene.fog=new THREE.FogExp2(0x101a35,.018);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,300);const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.outputColorSpace=THREE.SRGBColorSpace;mount.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xb8cfff,0x292235,2.1));const moon=new THREE.DirectionalLight(0xd5e4ff,2.8);moon.position.set(-10,20,8);moon.castShadow=true;moon.shadow.mapSize.set(2048,2048);moon.shadow.camera.left=-18;moon.shadow.camera.right=18;moon.shadow.camera.top=18;moon.shadow.camera.bottom=-18;scene.add(moon);const warmFill=new THREE.DirectionalLight(0xffc9a3,.85);warmFill.position.set(8,5,6);scene.add(warmFill);
+function mat(color,rough=.8,metal=0){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal})}const groundMat=mat(0x343d58),stone=mat(0x69738a),dark=mat(0x202944),brick=mat(0x333653),windowMat=new THREE.MeshStandardMaterial({color:0xffbf72,emissive:0xff8b37,emissiveIntensity:1.8}),cyanMat=new THREE.MeshStandardMaterial({color:0x70efff,emissive:0x29bce7,emissiveIntensity:2});
+function box(w,h,d,material,x,y,z,cast=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);o.position.set(x,y,z);o.castShadow=cast;o.receiveShadow=true;scene.add(o);return o}function cylinder(rt,rb,h,m,x,y,z,seg=12){const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);o.position.set(x,y,z);o.castShadow=true;scene.add(o);return o}
+box(150,.5,150,groundMat,0,-.35,0,false);
+// plaza tiles
+for(let x=-30;x<=30;x+=3)for(let z=-30;z<=30;z+=3){let t=box(2.92,.035,2.92,((x+z)%2===0)?mat(0x3b4560):mat(0x333d57),x,-.07,z,false)}
+// surrounding buildings
+function building(x,z,w,d,h,color){box(w,h,d,mat(color),x,h/2-.1,z);box(w+0.5,.35,d+.5,brick,x,h+.05,z);const rows=Math.floor((h-1)/2);for(let yy=1.5;yy<h-0.3;yy+=2){for(let xx=-w/2+1;xx<w/2-.4;xx+=2){box(.65,.95,.08,windowMat,x+xx,yy,z-d/2-.045,false)}}box(w+.8,.25,d+.8,dark,x,h+.35,z)}
+building(-17,-7,8,9,11,0x303957);building(16,-10,10,8,14,0x292f4b);building(-19,13,7,10,8,0x41415f);building(19,13,9,9,10,0x353653);building(0,-28,18,6,16,0x292c48);
+// tower landmark
+cylinder(3.5,4.5,17,brick,0,8,-24,8);const roof=new THREE.Mesh(new THREE.ConeGeometry(4.5,5,8),mat(0x1c2340));roof.position.set(0,19,-24);roof.castShadow=true;scene.add(roof);const clock=cylinder(1.35,1.35,.12,mat(0x171b30),0,12,-20.9,32);clock.rotation.x=Math.PI/2;for(let i=0;i<12;i++){let a=i*Math.PI/6;box(.09,.28,.08,cyanMat,Math.sin(a)*1.05,12+Math.cos(a)*1.05,-20.78,false)}
+// street lamps
+for(const [x,z] of [[-9,-5],[10,-4],[-10,10],[10,12],[0,-13]]){cylinder(.09,.14,3.2,mat(0x171c2d),x,1.5,z);box(.8,.12,.5,dark,x,3.15,z);const lamp=box(.42,.45,.32,windowMat,x,2.85,z,false);const light=new THREE.PointLight(0xffb96b,13,9);light.position.set(x,2.7,z);scene.add(light)}
+// rain streak particles
+const rainGeo=new THREE.BufferGeometry(),rainCount=1000,positions=new Float32Array(rainCount*3);for(let i=0;i<rainCount;i++){positions[i*3]=(Math.random()-.5)*70;positions[i*3+1]=Math.random()*24;positions[i*3+2]=(Math.random()-.5)*70}rainGeo.setAttribute('position',new THREE.BufferAttribute(positions,3));const rain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0x91b8ff,size:.045,transparent:true,opacity:.5}));scene.add(rain);
+// character anime-inspired stylized low-poly detective
+const player=new THREE.Group();scene.add(player);
+const skin=mat(0xc88f72,.72),hair=mat(0x171a25,.92),coat=mat(0x242b3d,.82),shirt=mat(0xd5dbe4,.75),boots=mat(0x11151d,.7),pants=mat(0x303647,.85),leather=mat(0x604638,.8),eyeMat=mat(0x171a25,.45),metal=mat(0x8794a8,.35,.55),skinLight=mat(0xe0ae91,.7),coatTrim=mat(0x9aacc6,.55),hairHi=mat(0x303545,.8);
+function part(g,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;
+if(y>.35&&y<.65&&Math.abs(x)>.08&&Math.abs(x)<.25&&g.type==='CylinderGeometry')o.userData.animPart='leg';
+if(y<.22&&Math.abs(x)>.08&&g.type==='BoxGeometry'&&Math.abs(z)<.2)o.userData.animPart='foot';
+player.add(o);return o}
+function limb(a,b,r1,r2,m){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=new THREE.Vector3().subVectors(B,A);const o=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),12),m);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());o.castShadow=true;o.receiveShadow=true;o.userData.animPart='arm';o.userData.side=A.x<0?-1:1;player.add(o);return o}
+// Casaco comprido, torso anatômico e camadas de roupa
+part(new THREE.CapsuleGeometry(.29,.58,6,12),coat,0,1.22,0,1.12,1.05,.78);
+part(new THREE.SphereGeometry(.31,20,16),shirt,0,1.37,.035,1,.72,.75);
+part(new THREE.BoxGeometry(.09,.64,.035),coatTrim,0,1.22,.247);
+part(new THREE.BoxGeometry(.48,.07,.08),leather,0,.91,.02);
+part(new THREE.BoxGeometry(.11,.12,.09),metal,0,.91,.075);
+part(new THREE.CylinderGeometry(.105,.13,.5,12),pants,-.16,.48,0,.9,1,1);
+part(new THREE.CylinderGeometry(.105,.13,.5,12),pants,.16,.48,0,.9,1,1);
+part(new THREE.BoxGeometry(.23,.15,.39),boots,-.16,.12,.07);
+part(new THREE.BoxGeometry(.23,.15,.39),boots,.16,.12,.07);
+part(new THREE.BoxGeometry(.24,.035,.16),metal,-.16,.17,.12);
+part(new THREE.BoxGeometry(.24,.035,.16),metal,.16,.17,.12);
+// Pescoço e cabeça com mandíbula, orelhas, nariz e sobrancelhas
+part(new THREE.CylinderGeometry(.09,.11,.19,12),skin,0,1.72,0);
+part(new THREE.SphereGeometry(.255,24,20),skin,0,1.96,0, .88,1.08,.82);
+part(new THREE.SphereGeometry(.19,20,16),skinLight,0,1.86,.075,.88,.62,.72);
+part(new THREE.SphereGeometry(.055,12,10),skin,-.225,1.96,0,.7,1,.7);
+part(new THREE.SphereGeometry(.055,12,10),skin,.225,1.96,0,.7,1,.7);
+part(new THREE.ConeGeometry(.055,.13,8),skinLight,0,1.93,.218,1,.8,.85);
+part(new THREE.SphereGeometry(.026,10,8),skin,-.075,1.98,.215,1,.8,.5);
+part(new THREE.SphereGeometry(.026,10,8),skin,.075,1.98,.215,1,.8,.5);
+part(new THREE.SphereGeometry(.031,12,8),eyeMat,-.09,2.015,.204,1,.72,.55);
+part(new THREE.SphereGeometry(.031,12,8),eyeMat,.09,2.015,.204,1,.72,.55);
+part(new THREE.SphereGeometry(.012,8,8),shirt,-.096,2.023,.222);
+part(new THREE.SphereGeometry(.012,8,8),shirt,.084,2.023,.222);
+part(new THREE.BoxGeometry(.085,.025,.025),hair,-.09,2.06,.207,1,.8,1);
+part(new THREE.BoxGeometry(.085,.025,.025),hair,.09,2.06,.207,1,.8,1);
+part(new THREE.SphereGeometry(.17,20,12),hair,0,2.13,-.025,1.12,.65,1);
+part(new THREE.SphereGeometry(.095,16,10),hair,-.17,2.075,.09,.85,.8,1.1);
+part(new THREE.ConeGeometry(.12,.28,8),hair,-.16,2.02,.18,1,.8,.75);
+part(new THREE.SphereGeometry(.09,12,8),hairHi,.13,2.17,.015,.7,.35,.8);
+// Braços, cotovelos, mãos e luvas; peças separadas para silhueta humana
+limb([-.29,1.48,0],[-.43,1.15,.04],.105,.085,coat);
+limb([-.43,1.15,.04],[-.39,.99,.12],.085,.065,shirt);
+limb([.29,1.48,0],[.43,1.15,.04],.105,.085,coat);
+limb([.43,1.15,.04],[.39,.99,.12],.085,.065,shirt);
+part(new THREE.SphereGeometry(.075,12,10),skin,-.39,.94,.13,.8,1,.8);
+part(new THREE.SphereGeometry(.075,12,10),skin,.39,.94,.13,.8,1,.8);
+part(new THREE.BoxGeometry(.18,.12,.06),coatTrim,-.31,1.46,.07);
+part(new THREE.BoxGeometry(.18,.12,.06),coatTrim,.31,1.46,.07);
+part(new THREE.BoxGeometry(.1,.1,.1),metal,-.41,1.12,.09);
+
+part(new THREE.BoxGeometry(.1,.1,.1),metal,.41,1.12,.09);
+// Costuras, lapelas, bolsos, botões e gola para dar leitura de tecido
+part(new THREE.BoxGeometry(.055,.31,.035),shirt,-.075,1.35,.24,.75,1,.65);
+part(new THREE.BoxGeometry(.055,.31,.035),shirt,.075,1.35,.24,.75,1,.65);
+part(new THREE.BoxGeometry(.13,.22,.035),coatTrim,-.18,1.31,.255,.8,1,.6);
+part(new THREE.BoxGeometry(.13,.22,.035),coatTrim,.18,1.31,.255,.8,1,.6);
+for(let by=1.36;by>1.02;by-=.105)part(new THREE.SphereGeometry(.018,8,8),metal,.025,by,.275);
+part(new THREE.BoxGeometry(.16,.12,.035),leather,-.18,1.05,.255);
+part(new THREE.BoxGeometry(.16,.12,.035),leather,.18,1.05,.255);
+// Mechas de cabelo e detalhe da sobrancelha/maçãs do rosto
+part(new THREE.ConeGeometry(.045,.17,7),hairHi,.08,2.18,.12,.75,1.2,.7);
+part(new THREE.ConeGeometry(.045,.14,7),hair,-.04,2.18,.13,.8,1,.7);
+part(new THREE.SphereGeometry(.045,10,8),skinLight,-.15,1.91,.16,.9,.55,.5);
+part(new THREE.SphereGeometry(.045,10,8),skinLight,.15,1.91,.16,.9,.55,.5);
+part(new THREE.BoxGeometry(.09,.018,.025),hair,-.09,2.045,.224);
+part(new THREE.BoxGeometry(.09,.018,.025),hair,.09,2.045,.224);
+
+player.position.set(0,0,7);let facing=0;const keys={};let locked=false;let found=new Set();const clueObjects=[];let hp=100,stamina=100,attackCooldown=0,dodgeTime=0,enemyActive=false,enemyHP=3,gameOver=false,level=1,enemyMaxHP=3,enemyDamage=12,enemySpeed=2.05;const levelLabel=document.querySelector('#levelLabel');let lastDamage=0;const hpBar=document.querySelector('#hpBar'),stBar=document.querySelector('#stBar'),hpText=document.querySelector('#hpText'),stText=document.querySelector('#stText'),toast=document.querySelector('#toast');function notify(t){toast.textContent=t;toast.style.display='block';clearTimeout(notify.timer);notify.timer=setTimeout(()=>toast.style.display='none',2600)}function updateStats(){hpBar.style.width=hp+'%';stBar.style.width=stamina+'%';hpText.textContent=Math.ceil(hp)+'/100';stText.textContent=Math.ceil(stamina)+'/100'}function clue(id,x,z,color,label,desc){const group=new THREE.Group();group.position.set(x,0,z);scene.add(group);const orb=new THREE.Mesh(new THREE.OctahedronGeometry(.45),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.8}));orb.position.y=1.05;group.add(orb);const ring=new THREE.Mesh(new THREE.TorusGeometry(.65,.035,8,32),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.8}));ring.rotation.x=Math.PI/2;ring.position.y=.2;group.add(ring);const light=new THREE.PointLight(color,2.5,5);light.position.y=1.2;group.add(light);clueObjects.push({id,group,orb,label,desc,baseY:1.05})}
+clue('letter',-6,1,0x72e6ff,'Carta molhada','A carta tem a frase: “O sino tocou antes da meia-noite”. A tinta ainda está fresca.');clue('footprints',7,5,0xc3a1ff,'Pegadas brilhantes','As pegadas vêm da torre, mas terminam diante da fonte. Alguém tentou apagar o rastro.');clue('watch',1,-15,0xffbd73,'Relógio parado','O relógio parou às 23h47. Há uma pequena marca de brasão na tampa.');
+
+// Exploração: cristais recolhíveis, objetos informativos e interiores acessíveis.
+const collectibleCrystals=[];
+let crystalsCollected=0;
+const crystalCounter=document.getElementById('crystalCounter');
+function addCollectibleCrystal(x,z,color=0xc7a5ff){
+ const g=new THREE.Group();g.position.set(x,0,z);
+ const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.42),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.8,metalness:.25,roughness:.25}));
+ gem.position.y=.9;g.add(gem);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.58,.035,8,24),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85}));
+ ring.rotation.x=Math.PI/2;ring.position.y=.12;g.add(ring);
+ const light=new THREE.PointLight(color,1.5,4);light.position.y=1;g.add(light);scene.add(g);
+ collectibleCrystals.push({group:g,gem,baseY:.9,active:true});
+}
+[[-12,2],[11,5],[-5,-11],[8,-18],[21,-6],[-24,8],[27,17],[3,20],[-14,-18],[14,22],[0,-7],[29,-15]].forEach((p,i)=>addCollectibleCrystal(p[0],p[1],[0xc7a5ff,0x78eaff,0xffd078][i%3]));
+const worldItems=[];
+function addWorldItem(x,z,label,detail,color=0xffd078){
+ const g=new THREE.Group();g.position.set(x,0,z);
+ const paper=new THREE.Mesh(new THREE.BoxGeometry(.48,.62,.07),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.28}));
+ paper.position.y=.72;g.add(paper);
+ const glow=new THREE.PointLight(color,.8,3);glow.position.y=1;g.add(glow);scene.add(g);
+ worldItems.push({group:g,label,detail,active:true});
+}
+addWorldItem(-13,8,'Bilhete amassado','“A chave da loja antiga está escondida perto do poço. O dono sabe por que os cristais aparecem à noite.”');
+addWorldItem(14,7,'Recibo da relojoaria','O recibo registra a compra de três relógios às 23h47 — todos pagos com moedas sem data.');
+addWorldItem(26,5,'Mapa rasgado','O mapa marca uma passagem entre o Mercado Velho e o Arquivo Municipal.');
+addWorldItem(-25,-3,'Página do arquivo','“A torre foi fechada depois que os moradores começaram a ouvir vozes dentro das paredes.”');
+addWorldItem(35,-7,'Receita rasurada','A receita tem o mesmo símbolo que aparece na porta da torre.');
+addWorldItem(37,11,'Chave do quarto 7','A chave está marcada com o horário 23h47.');
+addWorldItem(-34,13,'Anotação sobre os cristais','Três fragmentos abrem a passagem para a torre e guardam memórias esquecidas.');
+
+const enterablePlaces=[];
+let currentInterior=null;
+let returnPosition=null;
+function makeInterior(place){
+ const cx=place.cx,cz=place.cz,w=12,d=10;
+ box(w,.25,d,mat(0x62564e),cx,.02,cz,false);
+ box(w,.4,.35,mat(0x40313a),cx,2.2,cz-d/2,false);
+ box(w,.4,.35,mat(0x40313a),cx,2.2,cz+d/2,false);
+ box(.35,.4,d,mat(0x40313a),cx-w/2,2.2,cz,false);
+ box(.35,.4,d,mat(0x40313a),cx+w/2,2.2,cz,false);
+ // Interior décor: counters, shelves, tables and glowing clues.
+ if(place.kind==='loja'){
+   box(4,.9,.65,mat(0x8b654c),cx, .62,cz-2,false);
+   for(let i=0;i<4;i++){box(.55,.35,.45,mat([0x72a6bd,0xb9a06a,0x9c7fc1,0x8bb28a][i]),cx-1.35+i*.9,1.22,cz-2,false)}
+   for(let i=0;i<3;i++){box(.5,1.8,.45,mat(0x5d443e),cx-4.8+i*1.3,1,cz+1,false);for(let j=0;j<3;j++)box(.35,.28,.28,mat([0x8ec4d5,0xe1c27a,0x9b85cc][(i+j)%3]),cx-4.8+i*1.3, .45+j*.48,cz+.72,false)}
+ }else if(place.kind==='arquivo'){
+   for(let i=0;i<4;i++){box(.5,2,.7,mat(0x634633),cx-4.4+i*2.8,1,cz-3,false);for(let j=0;j<4;j++)box(.38,.25,.5,mat([0xbaa47b,0x9cbbcc,0xc4a4d8][(i+j)%3]),cx-4.4+i*2.8,.35+j*.42,cz-3.1,false)}
+   box(2,.12,1.2,mat(0x694d3c),cx,1,cz+1,false);
+ }else if(place.kind==='farmacia'){
+   box(3,.85,.7,mat(0x6b8f86),cx, .62,cz-2,false);
+   for(let i=0;i<5;i++){box(.35,.48,.35,mat([0x9fe7cf,0xe9d8a6,0xa7c8ed,0xd8a9df,0xf0c2a2][i]),cx-1.45+i*.72,1.3,cz-2,false)}
+   for(let i=0;i<3;i++)box(2,.16,.35,mat(0x79583e),cx-4, .8+i*.65,cz-1.7,false);
+ }else if(place.kind==='hospedaria'){
+   box(3,.8,1,mat(0x865b48),cx, .55,cz-2,false);
+   for(let i=0;i<3;i++){box(1.7,.35,2,mat(0x8d6a9d),cx-3+i*3, .38,cz+1);box(1.7,.15,1.8,mat(0xe2d8c7),cx-3+i*3, .62,cz+1)}
+   box(2,.12,1.2,mat(0x4e443d),cx,1.1,cz+3,false);
+ }else if(place.kind==='biblioteca'){
+   for(let i=0;i<5;i++){box(.5,2.2,.65,mat(0x523d50),cx-4.8+i*2.4,1.1,cz-3,false);for(let j=0;j<5;j++)box(.35,.22,.48,mat([0xb58d59,0x7398ad,0x9d7fb9,0x8aab8a][(i+j)%4]),cx-4.8+i*2.4,.35+j*.38,cz-3.08,false)}
+   box(2,.12,1.2,mat(0x6b4d3b),cx,1,cz+1,false);
+ }else{
+   box(2.5,.7,1.1,mat(0x8b654c),cx, .45,cz+1,false);
+   box(1.1,.65,.7,mat(0x9b795d),cx-3, .4,cz-2,false);
+   box(.7,1.3,.1,mat(0x66506e),cx+3, .8,cz-3,false);
+ }
+ const doorGlow=new THREE.PointLight(0x82eaff,1.1,5);doorGlow.position.set(cx,1.4,cz+d/2-1);scene.add(doorGlow);
+}
+const placeDefs=[
+ {id:'casa_mara',name:'Casa da Florista',kind:'casa',x:-14,z:-11,cx:43,cz:-30,info:'A casa cheira a flores secas. Há pétalas violetas no chão e um desenho da torre sobre a mesa.'},
+ {id:'loja_nina',name:'Loja do Mercado',kind:'loja',x:27,z:2,cx:63,cz:-30,info:'Nina vende relógios, mapas e objetos perdidos. Um caderno registra compras feitas exatamente às 23h47.'},
+ {id:'arquivo',name:'Arquivo Municipal',kind:'arquivo',x:-24,z:-5,cx:83,cz:-30,info:'As prateleiras guardam documentos antigos. Um registro menciona uma passagem subterrânea até a torre.'},
+ {id:'casa_vigia',name:'Casa do Vigia',kind:'casa',x:25,z:16,cx:103,cz:-30,info:'O vigia deixou um diário: “A entidade não atravessa portas quando alguém diz a verdade em voz alta.”'}
+];
+
+placeDefs.push(
+ {id:'farmacia_lua',name:'Farmácia Lua Azul',kind:'farmacia',x:36,z:-8,cx:123,cz:-30,info:'A farmacêutica anotou que moradores compraram calmantes sempre antes do sino tocar. No balcão há uma lista de nomes com o símbolo da torre.'},
+ {id:'hospedaria',name:'Hospedaria Última Luz',kind:'hospedaria',x:38,z:10,cx:143,cz:-30,info:'O livro de hóspedes mostra um quarto reservado toda noite às 23h47 por alguém que nunca aparece no registro de saída.'},
+ {id:'biblioteca_secreta',name:'Biblioteca Secreta',kind:'biblioteca',x:-35,z:12,cx:163,cz:-30,info:'Atrás de uma estante, livros antigos descrevem cristais que guardam memórias. Uma anotação revela que três fragmentos abrem a passagem para a torre.'}
+);
+// Ruas adicionais, calçadas e fachadas para dar sensação de uma cidade maior.
+const roadMat=mat(0x4a4a55),sidewalkMat=mat(0x777580),wallMats=[mat(0x9a7869),mat(0x6f8990),mat(0x9d906d),mat(0x82749a)];
+box(72,.12,5,roadMat,8,.06,-1,false);
+box(72,.16,1.2,sidewalkMat,8,.12,-4.1,false);
+box(72,.16,1.2,sidewalkMat,8,.12,2.1,false);
+box(5,.12,64,roadMat,31,.06,-1,false);
+box(1.2,.16,64,sidewalkMat,27.9,.12,-1,false);
+box(1.2,.16,64,sidewalkMat,34.1,.12,-1,false);
+for(let i=0;i<12;i++){
+ const x=-31+(i%6)*12, z= i<6 ? -24 : 25;
+ const width=5+(i%3),height=3.8+(i%2)*.8;
+ box(width,height,.45,wallMats[i%wallMats.length],x,height/2,z,false);
+ box(width+.25,.28,.65,mat(0x40394b),x,height+.08,z,false);
+ box(.95,1.8,.12,mat(0x473a43),x, .95,z+.28,false);
+ box(.8,.8,.12,mat(0xb4dbe0),x-1.35,2,z+.28,false);
+ box(.8,.8,.12,mat(0xb4dbe0),x+1.35,2,z+.28,false);
+}
+// Postes de luz e placas para orientar a exploração.
+for(let i=0;i<7;i++){
+ const x=-24+i*10;
+ box(.12,3,.12,mat(0x3e3c4d),x,1.5,4,false);
+ const lamp=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),new THREE.MeshStandardMaterial({color:0xffdf9b,emissive:0xffcf74,emissiveIntensity:1.4}));
+ lamp.position.set(x,3.05,4);scene.add(lamp);
+ const glow=new THREE.PointLight(0xffd58a,.65,7);glow.position.set(x,3,4);scene.add(glow);
+}
+const visitedPlaces=new Set();
+const cityQuest=document.getElementById('cityQuest');
+function updateCityQuest(){
+ const tasks=[
+  ['farmacia_lua','Visite a Farmácia Lua Azul'],
+  ['hospedaria','Investigue a Hospedaria Última Luz'],
+  ['biblioteca_secreta','Descubra a Biblioteca Secreta'],
+  ['secret_note','Encontre a anotação sobre os cristais']
+ ];
+ if(cityQuest)cityQuest.innerHTML='Tarefas da cidade:<br>'+tasks.map(([id,label])=>`${visitedPlaces.has(id)||foundWorldNotes.has(id)?'✓':'○'} ${label}`).join('<br>');
+}
+const foundWorldNotes=new Set();
+
+placeDefs.forEach((pl,i)=>{
+ // Doorway and sign in the outdoor town; interiors are separate walkable rooms.
+ const doorMat=mat([0x7b5138,0x376c7a,0x6b5b8d,0x4d735d][i]);
+ box(1.7,2.5,.22,doorMat,pl.x,1.2,pl.z,false);
+ box(2.5,.25,.3,mat(0x2a3049),pl.x,2.65,pl.z,false);
+ const sign=box(1.2,.5,.12,mat(0xf1d69a),pl.x,3.05,pl.z,false);
+ const signText=new THREE.Mesh(new THREE.BoxGeometry(.7,.07,.025),new THREE.MeshBasicMaterial({color:0x2d2940}));signText.position.set(pl.x,3.06,pl.z+.08);scene.add(signText);
+ const glow=new THREE.PointLight(0x8be9fd,.7,4);glow.position.set(pl.x,1.6,pl.z+1);scene.add(glow);
+ const item={...pl,group:new THREE.Group()};item.group.position.set(pl.x,0,pl.z);enterablePlaces.push(item);
+ makeInterior(pl);
+ addWorldItem(pl.cx,pl.cz-1.7,pl.kind==='loja'?'Caderno de vendas':pl.kind==='arquivo'?'Documento confidencial':pl.kind==='farmacia'?'Registro de receitas':pl.kind==='hospedaria'?'Livro de hóspedes':pl.kind==='biblioteca'?'Anotação secreta':'Diário encontrado',pl.info,0x9fe7ff);
+});
+updateCityQuest();
+function nearestWorldThing(list,range){
+ let best=null,bd=range;
+ for(const a of list){if(a.active===false)continue;const d=player.position.distanceTo(a.group.position);if(d<bd){best=a;bd=d}}
+ return best;
+}
+function handleExplorationInteraction(){
+ if(currentInterior){
+   if(player.position.distanceTo(new THREE.Vector3(currentInterior.cx,0,currentInterior.cz+4.1))<3.2){
+     player.position.copy(returnPosition);currentInterior=null;returnPosition=null;
+     say('Você saiu para a rua. Explore outra casa ou loja.');notify('Você voltou à cidade.');return true;
+   }
+   const item=nearestWorldThing(worldItems,3.1);
+   if(item){item.active=false;item.group.visible=false;addFoundText(item.label,item.detail);return true}
+   say('Explore a sala e aproxime-se da saída para voltar à rua.');return true;
+ }
+ const crystal=nearestWorldThing(collectibleCrystals,2.6);
+ if(crystal){
+   crystal.active=false;crystal.group.visible=false;crystalsCollected++;
+   if(crystalCounter)crystalCounter.textContent='💎 Cristais: '+crystalsCollected;
+   notify('Cristal recolhido! Total: '+crystalsCollected);say('Você guardou o cristal. Talvez ele seja uma fonte de energia para a entidade.');return true;
+ }
+ const item=nearestWorldThing(worldItems,2.8);
+ if(item){item.active=false;item.group.visible=false;addFoundText(item.label,item.detail);return true}
+ const place=enterablePlaces.find(pl=>player.position.distanceTo(new THREE.Vector3(pl.x,0,pl.z))<3.2);
+ if(place){
+   returnPosition=player.position.clone();currentInterior=place;
+   visitedPlaces.add(place.id);updateCityQuest();
+   player.position.set(place.cx,0,place.cz);
+   say(place.info);notify('Entrou em: '+place.name+' · investigue os objetos e aproxime-se da saída para voltar.');
+   return true;
+ }
+ return false;
+}
+function addFoundText(label,detail){
+ if(label.toLowerCase().includes('cristais')||detail.toLowerCase().includes('três fragmentos'))foundWorldNotes.add('secret_note');
+ updateCityQuest();
+ const row=document.createElement('div');row.style.marginTop='5px';row.style.color='#ffe2a6';row.textContent='✧ '+label+': '+detail;
+ clues.appendChild(row);say(label+' — '+detail);notify('Informação registrada: '+label);
+}
+
+// A sombra aparece após recolher todas as pistas: primeiro encontro de ação em tempo real
+const enemy=new THREE.Group();enemy.visible=false;scene.add(enemy);
+const enemyMat=mat(0x171522,.98),enemyCloth=mat(0x262035,.95),enemyGlow=new THREE.MeshStandardMaterial({color:0x9c78ff,emissive:0x5428c9,emissiveIntensity:1.8});
+function enemyPart(g,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;
+if(y>.9&&y<1.5&&Math.abs(x)>.3&&Math.abs(x)<.5)o.userData.animPart='arm';
+if(y>.3&&y<.6&&Math.abs(x)>.08&&Math.abs(x)<.22)o.userData.animPart='leg';
+if(y<.2&&Math.abs(x)>.08&&Math.abs(x)<.22)o.userData.animPart='foot';
+o.userData.side=x<0?-1:1;enemy.add(o);return o}
+enemyPart(new THREE.CapsuleGeometry(.33,.8,6,12),enemyCloth,0,1.02,0,1.05,1.1,.78);
+enemyPart(new THREE.SphereGeometry(.27,20,16),enemyMat,0,1.88,0,.9,1.08,.85);
+enemyPart(new THREE.SphereGeometry(.29,16,12),enemyMat,0,2.04,-.03,1.05,.55,.9);
+enemyPart(new THREE.CylinderGeometry(.1,.14,.48,12),enemyMat,-.15,.45,0);
+enemyPart(new THREE.CylinderGeometry(.1,.14,.48,12),enemyMat,.15,.45,0);
+enemyPart(new THREE.BoxGeometry(.2,.14,.32),enemyMat,-.15,.12,.05);
+enemyPart(new THREE.BoxGeometry(.2,.14,.32),enemyMat,.15,.12,.05);
+enemyPart(new THREE.CylinderGeometry(.085,.11,.5,12),enemyMat,-.4,1.22,0,1,1,.85);
+enemyPart(new THREE.CylinderGeometry(.085,.11,.5,12),enemyMat,.4,1.22,0,1,1,.85);
+enemyPart(new THREE.SphereGeometry(.075,12,10),enemyGlow,-.4,.94,.08);
+enemyPart(new THREE.SphereGeometry(.075,12,10),enemyGlow,.4,.94,.08);
+enemyPart(new THREE.SphereGeometry(.045,12,8),enemyGlow,-.095,1.91,.245);
+enemyPart(new THREE.SphereGeometry(.045,12,8),enemyGlow,.095,1.91,.245);
+
+// Camadas de manto rasgado, placas e marcas sobrenaturais
+enemyPart(new THREE.BoxGeometry(.28,.72,.09),enemyCloth,-.2,.72,.12,.8,1,.7);
+enemyPart(new THREE.BoxGeometry(.28,.72,.09),enemyCloth,.2,.72,.12,.8,1,.7);
+enemyPart(new THREE.BoxGeometry(.16,.16,.04),enemyGlow,-.17,1.43,.22);
+enemyPart(new THREE.BoxGeometry(.16,.16,.04),enemyGlow,.17,1.43,.22);
+enemyPart(new THREE.ConeGeometry(.1,.22,6),enemyMat,-.25,1.73,0);
+enemyPart(new THREE.ConeGeometry(.1,.22,6),enemyMat,.25,1.73,0);
+const enemyLight=new THREE.PointLight(0x7145ff,2,5);enemyLight.position.set(0,1.8,0);enemy.add(enemyLight);
+
+// fountain
+cylinder(2.4,2.7,.55,stone,0,.15,-2,24);cylinder(1.6,1.7,.25,mat(0x4c6c91),0,.55,-2,24);cylinder(.35,.5,1.2,stone,0,.9,-2,12);const water=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,.08,32),new THREE.MeshStandardMaterial({color:0x3c9cce,transparent:true,opacity:.7,metalness:.4,roughness:.2}));water.position.set(0,.72,-2);scene.add(water);
+
+// Mundo expandido: Jardim Memorial, Mercado Velho, Arquivo Municipal e Viela dos Ecos.
+function addLantern(x,z,color=0x59e6db,intensity=1.1){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const stem=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,1.8,8),new THREE.MeshStandardMaterial({color:0x25364c,metalness:.6,roughness:.35}));stem.position.y=.9;g.add(stem);const orb=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.8}));orb.position.y=1.9;g.add(orb);const light=new THREE.PointLight(color,intensity,7);light.position.y=1.9;g.add(light)}
+function makeTree(x,z,c=0x347d69){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,2.2,8),new THREE.MeshStandardMaterial({color:0x594236}));trunk.position.set(x,1.1,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.2,1),new THREE.MeshStandardMaterial({color:c,roughness:.9}));crown.position.set(x,2.7,z);crown.scale.set(1,1.1,.95);scene.add(crown);for(let i=0;i<3;i++){const b=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),new THREE.MeshStandardMaterial({color:[0xff80b5,0xffd36e,0x8de8ff][i]}));b.position.set(x+(i-1)*.45,2.8+(i%2)*.35,z+.65);scene.add(b)}}
+function makeBench(x,z,rot=0){const wood=new THREE.MeshStandardMaterial({color:0x9a674c});const seat=new THREE.Mesh(new THREE.BoxGeometry(1.8,.14,.48),wood);seat.position.set(x,.55,z);seat.rotation.y=rot;scene.add(seat);for(const dx of [-.65,.65]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.55,.12),new THREE.MeshStandardMaterial({color:0x38495d}));leg.position.set(x+dx,.28,z);leg.rotation.y=rot;scene.add(leg)}}
+for(const [x,z,c] of [[-12,-8,0x397c68],[-16,-12,0x477e65],[-10,-15,0x3a6c70],[-19,-7,0x557b55]])makeTree(x,z,c);makeBench(-13,-12,.25);makeBench(-17,-9,-.35);for(const [x,z,c] of [[-11,-10,0xff6cae],[-14,-14,0x69dce8],[-18,-11,0xffd36a],[-9,-13,0xb39aff]])addLantern(x,z,c,.7);
+function makeMarketStall(x,z,color){const frame=new THREE.MeshStandardMaterial({color:0x6e5145}),canopy=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.12});const counter=new THREE.Mesh(new THREE.BoxGeometry(2.6,1,.9),new THREE.MeshStandardMaterial({color:0x93694d}));counter.position.set(x,.55,z);scene.add(counter);const roof=new THREE.Mesh(new THREE.BoxGeometry(2.9,.14,1.35),canopy);roof.position.set(x,2.15,z);scene.add(roof);for(const dx of [-1.25,1.25]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,2.1,8),frame);post.position.set(x+dx,1.05,z);scene.add(post)}for(let i=0;i<5;i++){const fruit=new THREE.Mesh(new THREE.SphereGeometry(.13,8,7),new THREE.MeshStandardMaterial({color:[0xff6b6b,0xffd166,0x6ee7b7,0x8fa8ff,0xff9fe5][i]}));fruit.position.set(x-.8+i*.4,1.15,z-.12);scene.add(fruit)}}
+makeMarketStall(19,-2,0xf16b8b);makeMarketStall(23,-2,0x5ac8d8);makeMarketStall(27,-2,0xe7b65a);
+const archiveBase=new THREE.Mesh(new THREE.BoxGeometry(9,5.2,1.1),new THREE.MeshStandardMaterial({color:0x4b6079}));archiveBase.position.set(-25,2.6,4);scene.add(archiveBase);const archiveRoof=new THREE.Mesh(new THREE.BoxGeometry(10,.35,1.5),new THREE.MeshStandardMaterial({color:0x26394e}));archiveRoof.position.set(-25,5.25,4);scene.add(archiveRoof);for(let i=0;i<5;i++){const x=-28.6+i*1.8;const col=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,4.4,10),new THREE.MeshStandardMaterial({color:0xc4d0d9}));col.position.set(x,2.35,3.25);scene.add(col);const win=new THREE.Mesh(new THREE.BoxGeometry(.75,1.4,.08),new THREE.MeshStandardMaterial({color:0x8bd8ee,emissive:0x2e8199,emissiveIntensity:.8}));win.position.set(x,3.25,3.38);scene.add(win)}
+for(let i=0;i<4;i++){const x=14+i*2.3,z=11,m=new THREE.MeshStandardMaterial({color:0x7b65bd,emissive:0x5833a8,emissiveIntensity:.55});for(const dx of [-.7,.7]){const post=new THREE.Mesh(new THREE.BoxGeometry(.16,3,.18),m);post.position.set(x+dx,1.5,z);scene.add(post)}const top=new THREE.Mesh(new THREE.BoxGeometry(1.55,.18,.2),m);top.position.set(x,3,z);scene.add(top);const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.32),new THREE.MeshStandardMaterial({color:0xc7a5ff,emissive:0x9b55ff,emissiveIntensity:1.5}));crystal.position.set(x,2.25,z);scene.add(crystal);addLantern(x,z+1.1,0xa875ff,.8)}
+
+// Informante: uma testemunha que pode ser interrogada
+const npc=new THREE.Group();npc.position.set(-4,0,-4);scene.add(npc);
+const npcSkin=mat(0xb98269,.75),npcHair=mat(0x2b1f25,.9),npcCoat=mat(0x514568,.8),npcShirt=mat(0xc8c9d5,.8),npcPants=mat(0x292d40,.85);
+function npcPart(g,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;npc.add(o);return o}
+function npcLimb(a,b,r1,r2,m){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=new THREE.Vector3().subVectors(B,A);const o=new THREE.Mesh(new THREE.CylinderGeometry(r2,r1,d.length(),12),m);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());o.castShadow=true;npc.add(o);return o}
+npcPart(new THREE.CapsuleGeometry(.27,.62,6,12),npcCoat,0,1.02,0,1.08,1.05,.8);
+npcPart(new THREE.SphereGeometry(.24,20,16),npcShirt,0,1.23,.03,1,.7,.7);
+npcPart(new THREE.CylinderGeometry(.09,.12,.42,12),npcPants,-.14,.43,0);
+npcPart(new THREE.CylinderGeometry(.09,.12,.42,12),npcPants,.14,.43,0);
+npcPart(new THREE.BoxGeometry(.2,.13,.32),boots,-.14,.1,.05);npcPart(new THREE.BoxGeometry(.2,.13,.32),boots,.14,.1,.05);
+npcPart(new THREE.CylinderGeometry(.085,.1,.16,12),npcSkin,0,1.67,0);
+npcPart(new THREE.SphereGeometry(.235,22,18),npcSkin,0,1.88,0,.9,1.08,.82);
+npcPart(new THREE.SphereGeometry(.24,18,12),npcHair,0,2.04,-.025,1.06,.62,.9);
+npcPart(new THREE.SphereGeometry(.09,14,10),npcHair,-.13,2.0,.09,.9,.8,1);
+npcPart(new THREE.ConeGeometry(.045,.1,8),npcSkin,0,1.86,.2,1,.8,.8);
+npcPart(new THREE.SphereGeometry(.025,10,8),mat(0x17172a),-.075,1.91,.195);
+npcPart(new THREE.SphereGeometry(.025,10,8),mat(0x17172a),.075,1.91,.195);
+npcPart(new THREE.BoxGeometry(.08,.025,.02),npcHair,-.075,1.95,.194);
+npcPart(new THREE.BoxGeometry(.08,.025,.02),npcHair,.075,1.95,.194);
+npcLimb([-.25,1.34,0],[-.34,1.02,.04],.09,.07,npcCoat);npcLimb([-.34,1.02,.04],[-.27,.91,.1],.07,.055,npcShirt);
+npcLimb([.25,1.34,0],[.34,1.02,.04],.09,.07,npcCoat);npcLimb([.34,1.02,.04],[.27,.91,.1],.07,.055,npcShirt);
+npcPart(new THREE.SphereGeometry(.06,12,10),npcSkin,-.27,.89,.1);npcPart(new THREE.SphereGeometry(.06,12,10),npcSkin,.27,.89,.1);
+npcPart(new THREE.BoxGeometry(.4,.055,.08),mat(0x887ca9),0,1.45,.11);
+
+npcPart(new THREE.BoxGeometry(.12,.24,.035),mat(0xb6a8d8,.65),-.17,1.18,.23);
+npcPart(new THREE.BoxGeometry(.12,.24,.035),mat(0xb6a8d8,.65),.17,1.18,.23);
+npcPart(new THREE.BoxGeometry(.28,.04,.04),mat(0x8d83ad,.55),0,1.48,.12);
+npcPart(new THREE.SphereGeometry(.018,8,8),mat(0xe5d7a0,.4,.3),0,1.44,.15);
+const npcLight=new THREE.PointLight(0x9d8bff,1.2,4);npcLight.position.set(0,2,0);npc.add(npcLight);
+
+// Moradores com falas e pequenos segredos.
+const townsfolk=[];
+function makeTownsperson(name,x,z,coatColor,hairColor,lines,role){const person=new THREE.Group();person.position.set(x,0,z);scene.add(person);const skin=new THREE.MeshStandardMaterial({color:0xc98f73}),coat=new THREE.MeshStandardMaterial({color:coatColor}),hair=new THREE.MeshStandardMaterial({color:hairColor});const body=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.72,4,8),coat);body.position.y=1.05;person.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.27,12,10),skin);head.position.y=1.72;person.add(head);const cap=new THREE.Mesh(new THREE.SphereGeometry(.29,12,8),hair);cap.position.set(0,1.86,-.02);cap.scale.set(1,.62,1);person.add(cap);for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),new THREE.MeshStandardMaterial({color:0x171a27}));eye.position.set(side*.09,1.73,.245);person.add(eye)}const glow=new THREE.PointLight(coatColor,.45,2.7);glow.position.y=1.5;person.add(glow);townsfolk.push({name,role,group:person,lines,index:0});return person}
+makeTownsperson('Mara',-9,-10,0x4f9e83,0x382a37,['As flores do memorial murcham sempre que o sino toca. É como se alguém roubasse as cores delas.','Encontrei uma fita violeta perto das lápides. O vento a levou na direção da Viela dos Ecos.'],'florista');
+makeTownsperson('Davi',-22,-1,0x5478ad,0x40312b,['O Arquivo Municipal guarda mapas que não aparecem em nenhum registro oficial.','Há um corredor apagado das plantas. Se encontrar uma página azul, não a leia perto da torre.'],'livreiro');
+makeTownsperson('Nina',23,1,0xd86d9a,0x5a3028,['Bem-vindo ao Mercado Velho! Hoje meus relógios atrasaram todos juntos... menos um, que andou para trás.','Recebi uma moeda sem data. Ela fica gelada quando alguém mente por perto.'],'comerciante');
+makeTownsperson('Tomás',24,13,0x7e75b8,0x242638,['Na Viela dos Ecos, seus passos voltam antes de você pisar. Não siga uma voz que diga seu nome.','Ontem ouvi minha própria voz saindo de um cristal: a quarta pista não está onde você procura.'],'vigia');
+
+
+const msg=document.querySelector('#message'),mission=document.querySelector('#missionText'),count=document.querySelector('#count'),bar=document.querySelector('#bar'),clues=document.querySelector('#clues');function say(t){msg.textContent=t}function nearestClue(){let best=null,dist=Infinity;for(const c of clueObjects){if(found.has(c.id))continue;const d=player.position.distanceTo(c.group.position);if(d<dist){dist=d;best=c}}return dist<3.2?best:null}
+function startNextLevel(){
+ level++;hp=100;stamina=100;gameOver=false;found.clear();enemyHP=enemyMaxHP=3+(level-1)*2;enemyDamage=Math.min(30,12+(level-1)*3);enemySpeed=2.05+(level-1)*.28;
+ player.position.set(0,0,7);enemy.position.set((level%2?5:-5),0,-10);enemy.scale.setScalar(1+(level-1)*.07);enemy.visible=false;enemyActive=false;
+ for(const c of clueObjects){c.group.visible=true}
+ clues.innerHTML='';count.textContent='Pistas encontradas: 0/3';bar.style.width='0%';levelLabel.textContent='Nível '+level+' · Caso '+String(level).padStart(3,'0');
+ mission.textContent='Nível '+level+': encontre as três pistas e derrote a entidade.';say('Novo caso iniciado. As pistas mudaram de lugar e a entidade está mais forte.');notify('NÍVEL '+level+' desbloqueado! Dificuldade aumentada.');
+ // Later cases move the clue positions to make exploration less repetitive.
+ const positions=[[-6+((level*3)%9),1+level%4],[7-(level%5)*2,5-(level%3)*3],[1+(level%4)*3,-15+level%5*2]];
+ clueObjects.forEach((c,i)=>c.group.position.set(positions[i][0],0,positions[i][1]));
+ updateStats();
+}
+
+function talkToTownsperson(){const nearby=townsfolk.filter(t=>player.position.distanceTo(t.group.position)<3.2).sort((a,b)=>player.position.distanceTo(a.group.position)-player.position.distanceTo(b.group.position))[0];if(!nearby)return false;nearby.group.rotation.y=Math.atan2(player.position.x-nearby.group.position.x,player.position.z-nearby.group.position.z);const panel=document.getElementById('dialogPanel'),name=document.getElementById('dialogName'),text=document.getElementById('dialogText');if(panel&&name&&text){name.textContent=nearby.name+' · '+nearby.role;text.textContent='“'+nearby.lines[nearby.index%nearby.lines.length]+'”';panel.style.display='block'}nearby.index++;notify(nearby.name+': conversa registrada.');say('Converse com os moradores: cada fala revela um detalhe do mistério.');return true}
+
+function interact(){if(handleExplorationInteraction())return;const c=nearestClue();if(c){found.add(c.id);c.group.visible=false;clues.innerHTML=[...found].map(id=>{const item=clueObjects.find(a=>a.id===id);return '✦ '+item.label}).join('<br>');count.textContent=`Pistas encontradas: ${found.size}/3`;bar.style.width=(found.size/3*100)+'%';say('Pista encontrada: '+c.label+' — '+c.desc);notify(c.label+': pista adicionada ao caderno.');if(found.size===3){mission.textContent='Nível '+level+': enfrente a entidade ('+enemyHP+' golpes para derrotá-la).';enemy.position.set(level%2?5:-5,0,-10);enemy.scale.setScalar(1+(level-1)*.07);enemy.visible=true;enemyActive=true;say('Uma sombra surgiu perto da torre! Use F para atacar e Espaço para esquivar.');notify('PERIGO: entidade do nível '+level+'! Resiste a '+enemyHP+' golpes.');}else mission.textContent=`Encontre as pistas restantes. (${found.size}/3)`;return}if(player.position.distanceTo(npc.position)<3.3){notify('Testemunha: “Ouvi o sino às 23h47. Vi alguém sair da torre carregando uma caixa… e não tinha sombra.”');say('A testemunha parece aterrorizada. Talvez as pistas revelem quem ela viu.');return}if(talkToTownsperson())return;say('Nada ao alcance. Aproxime-se de um cristal, pista, bilhete, morador ou porta e toque em INVESTIGAR.')}
+function attack(){if(attackCooldown>0||stamina<12||gameOver)return;attackCooldown=.55;stamina=Math.max(0,stamina-12);player.userData.attackFlash=.28;player.userData.attackPose=1;const d=player.position.distanceTo(enemy.position);if(enemyActive&&enemy.visible&&d<3.1){enemyHP--;notify('Golpe certeiro! A sombra está enfraquecendo.');say('Você atingiu a sombra!');if(enemyHP<=0){enemy.visible=false;enemyActive=false;mission.textContent='Caso '+String(level).padStart(3,'0')+' concluído!';say('A entidade se desfez, mas novas pistas surgem em outro lugar.');notify('VITÓRIA! Próximo nível em 3 segundos…');setTimeout(()=>startNextLevel(),3000);}}else{say('Você golpeou o ar. Aproxime-se do alvo para acertar.');}}
+function dodge(){if(stamina<20||dodgeTime>0||gameOver)return;stamina-=20;dodgeTime=.32;const f=new THREE.Vector3(-Math.sin(facing),0,-Math.cos(facing));player.position.addScaledVector(f,-2.2);notify('Esquiva!');}
+ 
+window.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='KeyF'&&!e.repeat)attack();if(e.code==='Space'&&!e.repeat)dodge();if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('click',()=>{if(!document.querySelector('#intro').classList.contains('hidden'))return;renderer.domElement.requestPointerLock?.()});document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===renderer.domElement);document.addEventListener('mousemove',e=>{if(locked)facing-=e.movementX*.0025});document.querySelector('#begin').addEventListener('click',()=>{document.querySelector('#intro').classList.add('hidden');if(!('ontouchstart' in window))renderer.domElement.requestPointerLock?.();say('Encontre os três brilhos para resolver o caso.');notify('Dica: aproxime-se dos objetos brilhantes e pressione E.');});document.querySelector('#mobileInteract').addEventListener('click',interact);document.querySelector('#mobileAttack').addEventListener('click',attack);document.querySelector('#mobileDodge').addEventListener('click',dodge);
+const runBtn=document.querySelector('#mobileRun');runBtn.addEventListener('pointerdown',e=>{e.preventDefault();keys.ShiftLeft=true;runBtn.setPointerCapture?.(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>runBtn.addEventListener(ev,()=>keys.ShiftLeft=false));
+// Joystick touch control
+const joy=document.querySelector('#joystick'),stick=document.querySelector('#stick');let joyId=null,joyX=0,joyY=0;
+function resetJoy(){joyId=null;joyX=0;joyY=0;stick.style.transform='translate(0px,0px)';keys.KeyW=keys.KeyA=keys.KeyS=keys.KeyD=false}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(e.pointerId);moveJoy(e)});
+joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId){e.preventDefault();moveJoy(e)}});
+function moveJoy(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const max=39,len=Math.hypot(dx,dy)||1;if(len>max){dx=dx/len*max;dy=dy/len*max}joyX=dx/max;joyY=dy/max;stick.style.transform=`translate(${dx}px,${dy}px)`;keys.KeyA=joyX<-.22;keys.KeyD=joyX>.22;keys.KeyW=joyY<-.22;keys.KeyS=joyY>.22}
+['pointerup','pointercancel','lostpointercapture'].forEach(ev=>joy.addEventListener(ev,resetJoy));
+// Drag anywhere outside joystick/buttons to rotate the third-person camera on touchscreens
+let lookPointer=null,lastLookX=0;renderer.domElement.style.touchAction='none';
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'&&!document.querySelector('#intro').classList.contains('hidden'))return;if(e.pointerType==='touch'){lookPointer=e.pointerId;lastLookX=e.clientX}});
+renderer.domElement.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&lookPointer===e.pointerId){facing-=(e.clientX-lastLookX)*.006;lastLookX=e.clientX}});
+['pointerup','pointercancel'].forEach(ev=>renderer.domElement.addEventListener(ev,e=>{if(e.pointerId===lookPointer)lookPointer=null}));
+const clock3=new THREE.Clock();const camOffset=new THREE.Vector3();
+function animateHumanoid(group,phase,amount=1){
+ if(!group)return;
+ // Estilo blocado inspirado em Minecraft: balanço amplo e alternado dos membros.
+ for(const obj of group.children){
+   const kind=obj.userData&&obj.userData.animPart;
+   const side=obj.userData&&obj.userData.side||1;
+   const base=obj.userData&&obj.userData.animBase;
+   if(!obj.userData)obj.userData={};
+   if(base===undefined)obj.userData.animBase={x:obj.rotation.x,y:obj.rotation.y,z:obj.rotation.z};
+   const b=obj.userData.animBase;
+   if(kind==='arm'){
+     const attackPose=(group===player?(group.userData.attackPose||0):0);
+     obj.rotation.x=b.x + Math.sin(phase+side*Math.PI)*0.9*amount;
+     obj.rotation.z=b.z + (attackPose&&side===1?-0.9*attackPose:0);
+   } else if(kind==='leg'){
+     obj.rotation.x=b.x + Math.sin(phase+side*Math.PI)*0.82*amount;
+     obj.rotation.z=b.z;
+   } else if(kind==='foot'){
+     obj.rotation.x=b.x + Math.sin(phase+side*Math.PI)*0.22*amount;
+     obj.rotation.z=b.z;
+   }
+ }
+}
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock3.getDelta(),.04);
+if(typeof skyDome!=='undefined'){
+ skyDome.position.copy(camera.position);
+ skyDome.material.uniforms.uTime.value=clock3.elapsedTime;
+ skyStars.position.copy(camera.position);
+ skyStars.children.forEach(st=>{st.material=starMaterial;st.material.opacity=.62+.3*Math.sin(clock3.elapsedTime*1.8+st.userData.twinkle)});
+ cloudGroup.children.forEach(cl=>{cl.position.x+=cl.userData.speed*dt;if(cl.position.x>270)cl.position.x=-270;});
+ moonGroup.rotation.y=clock3.elapsedTime*.015;
+}
+for(const c of collectibleCrystals){if(c.active){c.group.rotation.y+=dt*1.1;c.gem.position.y=c.baseY+Math.sin(clock3.elapsedTime*2+c.group.position.x)*.16}}for(const it of worldItems){if(it.active)it.group.rotation.y=Math.sin(clock3.elapsedTime*1.4+it.group.position.x)*.08;}attackCooldown=Math.max(0,attackCooldown-dt);dodgeTime=Math.max(0,dodgeTime-dt);if(!keys.ShiftLeft&&!keys.ShiftRight)stamina=Math.min(100,stamina+13*dt);const forward=new THREE.Vector3(-Math.sin(facing),0,-Math.cos(facing));const right=new THREE.Vector3(Math.cos(facing),0,-Math.sin(facing));let dir=new THREE.Vector3();if(keys.KeyW||keys.ArrowUp)dir.add(forward);if(keys.KeyS||keys.ArrowDown)dir.sub(forward);if(keys.KeyD||keys.ArrowRight)dir.add(right);if(keys.KeyA||keys.ArrowLeft)dir.sub(right);
+const mobile=window.__vtMobile;
+if(mobile&&mobile.active){
+  if(Math.abs(mobile.y||0)>.08)dir.addScaledVector(forward,-mobile.y);
+  if(Math.abs(mobile.x||0)>.08)dir.addScaledVector(right,mobile.x);
+}
+if(dir.lengthSq()>0){dir.normalize();const running=(keys.ShiftLeft||keys.ShiftRight||(mobile&&mobile.run))&&stamina>1;const speed=running?8:4.6;if(running)stamina=Math.max(0,stamina-22*dt);player.position.addScaledVector(dir,speed*dt);player.rotation.y=Math.atan2(dir.x,dir.z);player.userData.walk=(player.userData.walk||0)+dt*(running?13.5:9.5)}player.position.x=THREE.MathUtils.clamp(player.position.x,-25,25);player.position.z=THREE.MathUtils.clamp(player.position.z,-25,20);for(const c of clueObjects){if(c.group.visible){c.orb.position.y=c.baseY+Math.sin(clock3.elapsedTime*2.5+c.id.length)*.13;c.orb.rotation.y+=dt*.8;c.group.children[1].rotation.z+=dt*.5}}rain.position.z=Math.sin(clock3.elapsedTime*.15)*2;
+if(enemyActive&&enemy.visible&&!gameOver){enemy.children[1].scale.y=1+Math.sin(clock3.elapsedTime*5)*.04;enemy.children[2].material.emissiveIntensity=1.2+Math.sin(clock3.elapsedTime*7)*.8;const delta=new THREE.Vector3().subVectors(player.position,enemy.position);const dist=delta.length();if(dist>1.35){delta.normalize();enemy.position.addScaledVector(delta,enemySpeed*dt);enemy.rotation.y=Math.atan2(delta.x,delta.z)}if(dist<1.55&&clock3.elapsedTime-lastDamage>1.25&&dodgeTime<=0){hp=Math.max(0,hp-enemyDamage);lastDamage=clock3.elapsedTime;notify('A sombra atingiu você! Esquive com Espaço.');if(hp<=0){gameOver=true;mission.textContent='Você foi derrubado. Recarregue a página para tentar novamente.';say('Você caiu durante o confronto. Recarregue a página para recomeçar.')}}}
+player.userData.attackPose=Math.max(0,(player.userData.attackPose||0)-dt*4.5);const phase=player.userData.walk||clock3.elapsedTime*1.2;const movingPlayer=!!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight||((window.__vtMobile)&&window.__vtMobile.active&&Math.hypot(window.__vtMobile.x,window.__vtMobile.y)>.2));animateHumanoid(player,phase,movingPlayer?1.35:.08);
+if(enemy.visible){const ep=clock3.elapsedTime*5;animateHumanoid(enemy,ep,.9);enemy.rotation.z=Math.sin(clock3.elapsedTime*2.2)*.035;}
+for(let i=0;i<townsfolk.length;i++){const t=townsfolk[i];animateHumanoid(t.group,clock3.elapsedTime*1.4+i,.22);t.group.position.y=Math.sin(clock3.elapsedTime*1.6+i)*.018;}
+updateStats();const target=new THREE.Vector3(player.position.x,1.3,player.position.z);const desired=new THREE.Vector3(player.position.x+Math.sin(facing)*7,4.2,player.position.z+Math.cos(facing)*7);camera.position.lerp(desired,1-Math.exp(-5*dt));camera.lookAt(target);const near=nearestClue();if(near&&!found.has(near.id)&&document.querySelector('#intro').classList.contains('hidden')){if(!msg.textContent.startsWith('Pista encontrada')&&!msg.textContent.startsWith('CASO 001'))say('Pressione E para investigar: '+near.label)}else if(!near&&msg.textContent.startsWith('Pressione E'))say('Explore a praça misteriosa.');
+const dialogPanel=document.getElementById('dialogPanel');if(dialogPanel&&townsfolk.every(t=>player.position.distanceTo(t.group.position)>5))dialogPanel.style.display='none';const locationTag=document.getElementById('locationTag');if(locationTag){const px=player.position.x,pz=player.position.z;let loc='PRAÇA DO SINO';if(px<-7&&pz<-5)loc='JARDIM MEMORIAL';else if(px<-18&&pz>-4&&pz<10)loc='ARQUIVO MUNICIPAL';else if(px>17&&pz>-5&&pz<7)loc='MERCADO VELHO';else if(px>12&&pz>8)loc='VIELA DOS ECOS';else if(Math.abs(px)<7&&Math.abs(pz)<7)loc='PRAÇA DO SINO';else loc='RUAS DA CIDADE';locationTag.textContent='✦ '+loc;}
+
+renderer.render(scene,camera)}animate();window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script><div id="locationTag">✦ PRAÇA DO SINO</div><div id="dialogPanel" class="panel"><strong id="dialogName">Pessoa</strong><p id="dialogText"></p></div>
+<div id="mobileControls" aria-label="Controles para celular">
+  <div id="mobileStickArea" aria-label="Joystick de movimento">
+    <div id="mobileStickBase"></div><div id="mobileStickKnob"></div>
+  </div>
+  <div id="mobileHint">Arraste o lado direito para mover a câmera</div>
+  <div id="mobileActions">
+    <button class="mobileAction" id="mInteract" type="button">INVESTIGAR</button>
+    <button class="mobileAction" id="mAttack" type="button">ATACAR</button>
+    <button class="mobileAction" id="mDodge" type="button">ESQUIVAR</button>
+    <button class="mobileAction" id="mRun" type="button">CORRER</button>
+  </div>
+</div>
+
+<script>
+
+// Controles touch independentes dos controles de teclado.
+(function setupMobileControls(){
+ const root=document.getElementById('mobileControls');
+ const area=document.getElementById('mobileStickArea');
+ const knob=document.getElementById('mobileStickKnob');
+ if(!root||!area||!knob)return;
+ const touchState={x:0,y:0,active:false,id:null,run:false};
+ window.__vtMobile=touchState;
+ let stickCenter={x:0,y:0},lastLook=null,lookId=null;
+ const keys=window.__vtKeys||(window.__vtKeys={forward:false,back:false,left:false,right:false});
+ function center(){const r=area.getBoundingClientRect();stickCenter={x:r.left+r.width/2,y:r.top+r.height/2};}
+ function updateStick(e){
+   const max=42,dx=e.clientX-stickCenter.x,dy=e.clientY-stickCenter.y,len=Math.hypot(dx,dy)||1,scale=Math.min(1,max/len),x=dx*scale,y=dy*scale;
+   knob.style.transform=`translate(${x}px,${y}px)`;touchState.x=x/max;touchState.y=y/max;
+   keys.forward=touchState.y<-.22;keys.back=touchState.y>.22;keys.left=touchState.x<-.22;keys.right=touchState.x>.22;
+ }
+ function resetStick(){touchState.active=false;touchState.id=null;touchState.x=0;touchState.y=0;knob.style.transform='translate(0,0)';keys.forward=keys.back=keys.left=keys.right=false;}
+ area.addEventListener('pointerdown',e=>{e.preventDefault();center();touchState.active=true;touchState.id=e.pointerId;try{area.setPointerCapture(e.pointerId)}catch(_){}updateStick(e);},{passive:false});
+ area.addEventListener('pointermove',e=>{if(touchState.active&&e.pointerId===touchState.id){e.preventDefault();updateStick(e)}},{passive:false});
+ ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>area.addEventListener(ev,e=>{if(touchState.id===null||e.pointerId===touchState.id)resetStick();}));
+ const btn=(id,fn)=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();fn(true);},{passive:false});el.addEventListener('pointerup',e=>{e.preventDefault();fn(false);},{passive:false});el.addEventListener('pointercancel',()=>fn(false));el.addEventListener('contextmenu',e=>e.preventDefault());};
+ function tapAction(fn){return down=>{if(down)fn();};}
+ btn('mInteract',tapAction(()=>{if(typeof interact==='function')interact();else document.dispatchEvent(new KeyboardEvent('keydown',{key:'e'}));}));
+ btn('mAttack',tapAction(()=>{if(typeof attack==='function')attack();else document.dispatchEvent(new KeyboardEvent('keydown',{key:'f'}));}));
+ btn('mDodge',tapAction(()=>{if(typeof dodge==='function')dodge();else document.dispatchEvent(new KeyboardEvent('keydown',{key:' '}));}));
+ btn('mRun',down=>{touchState.run=down;});
+ // Drag on the right side of the screen to rotate the camera, without blocking action buttons.
+ document.addEventListener('pointerdown',e=>{
+   if(e.clientX<innerWidth*.48||e.target.closest('#mobileActions')||e.target.closest('#mobileStickArea'))return;
+   lookId=e.pointerId;lastLook={x:e.clientX,y:e.clientY};
+ },{passive:true});
+ document.addEventListener('pointermove',e=>{
+   if(lookId!==e.pointerId||!lastLook)return;
+   const dx=e.clientX-lastLook.x,dy=e.clientY-lastLook.y;lastLook={x:e.clientX,y:e.clientY};
+   window.dispatchEvent(new CustomEvent('vt-mobile-look',{detail:{dx,dy}}));
+ },{passive:true});
+ ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.pointerId===lookId){lookId=null;lastLook=null;}},{passive:true}));
+})();
+
+</script>
+
+<script>
+(function(){
+ const state=window.__vtMobile;
+ if(!state)return;
+ document.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='e')document.dispatchEvent(new Event('vt-interact'));if(k==='f')document.dispatchEvent(new Event('vt-attack'));});
+ document.addEventListener('vt-mobile-look',e=>{
+   const d=e.detail||{};
+   // Game loop can consume these deltas if it supports camera yaw/pitch.
+   window.__vtLookDelta=window.__vtLookDelta||{x:0,y:0};
+   window.__vtLookDelta.x+=d.dx||0;window.__vtLookDelta.y+=d.dy||0;
+ });
+})();
+</script>
+
+
+<div id="vtLandscapeHint" role="status">
+ <div>📱↻<br><br>Vire o celular para jogar na horizontal.<br><span style="font-size:14px;font-weight:400">Assim você terá mais espaço para explorar o mundo.</span></div>
+</div>
+<div id="vtScreenControls">
+ <button id="vtFullscreenBtn" type="button">⛶ Tela cheia</button>
+ <button id="vtMinimizeBtn" type="button">↙ Minimizar</button>
+</div>
+<script>
+(function(){
+ const fullBtn=document.getElementById('vtFullscreenBtn');
+ const miniBtn=document.getElementById('vtMinimizeBtn');
+ function isFullscreen(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
+ async function toggleFullscreen(){
+   try{
+     if(!isFullscreen()){
+       const el=document.documentElement;
+       if(el.requestFullscreen) await el.requestFullscreen();
+       else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+       if(screen.orientation && screen.orientation.lock){
+         try{await screen.orientation.lock('landscape');}catch(e){}
+       }
+     }else{
+       if(document.exitFullscreen) await document.exitFullscreen();
+       else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+     }
+   }catch(e){ /* Alguns navegadores móveis não permitem tela cheia por arquivo local. */ }
+   updateButtons();
+ }
+ function updateButtons(){
+   const full=isFullscreen();
+   fullBtn.textContent=full?'⛶ Sair da tela cheia':'⛶ Tela cheia';
+ }
+ fullBtn.addEventListener('click',toggleFullscreen);
+ miniBtn.addEventListener('click',function(){
+   if(isFullscreen()){
+     if(document.exitFullscreen) document.exitFullscreen();
+     else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+   }else{
+     window.scrollTo({top:0,behavior:'smooth'});
+   }
+   updateButtons();
+ });
+ document.addEventListener('fullscreenchange',updateButtons);
+ document.addEventListener('webkitfullscreenchange',updateButtons);
+ // Tente orientar em paisagem apenas após interação do usuário, conforme regras do navegador.
+ document.addEventListener('click',function(){
+   if(isFullscreen() && screen.orientation && screen.orientation.lock){
+     screen.orientation.lock('landscape').catch(function(){});
+   }
+ },{passive:true});
+ updateButtons();
+})();
+</script>
+
+</body></html>
